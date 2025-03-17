@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #ffffff; /* Change to your desired background */
+  --color-text: #000000; /* Change as needed */
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-600: #4b5563;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-700: #374151; /* Ensure this exists */
+  --color-white: #ffffff;
+  --color-gray-800: #1f2937;
+  --color-violet-500: #8b5cf6;
+  --color-gray-500: #6b7280;
+  --color-sky-500: #0ea5e9;
+  --color-gray-700: #374151;
+  --color-gray-400: #9ca3af;
+}
+
+
+.mt-2.bg-white::-webkit-scrollbar {
+    width: 0.5vw; 
+  }
+  
+  .mt-2.bg-white::-webkit-scrollbar-thumb {
+    background-color: #0866FF;
+
+    border-radius: 4px; 
+  }
+  
+
+  .mt-2.bg-white::-webkit-scrollbar-thumb:hover {
+    background-color: darkblue; 
+  }
+  
+  .mt-2.bg-white::-webkit-scrollbar-track {
+    background: #f0f0f0; 
+  }
+  
