@@ -91,11 +91,11 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   
 
   // Assign Project to Project Manager
-  const assignProject = async (projectId, managerId) => {
+  const assignProject = async (projectId, managerIds) => { 
     setIsLoading(true);
     setMessage("");
 
-    console.log("Assigning project:", projectId, "to manager:", managerId); // Log request data
+    console.log("Assigning project:", projectId, "to managers:", managerIds); // Log request data
 
     try {
         const response = await fetch(`${API_URL}/api/assign-project-manager`, {
@@ -106,7 +106,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
             },
             body: JSON.stringify({ 
                 project_id: projectId, 
-                project_manager_id: managerId 
+                project_manager_ids: managerIds  // Ensure it's an array
             }),
         });
 
@@ -128,6 +128,7 @@ export const BDProjectsAssignedProvider = ({ children }) => {
         setIsLoading(false);
     }
 };
+
 
 const fetchPerformanceDetails = async () => {
   setIsLoading(true);

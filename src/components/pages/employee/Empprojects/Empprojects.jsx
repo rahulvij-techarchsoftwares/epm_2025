@@ -27,7 +27,6 @@ function ProjectCard({ project }) {
         </div>
         
         <div className="space-y-4">
-          {/* Assigned Date */}
           <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
             <Calendar className="w-5 h-5 mr-3 text-blue-500" />
             <div>
@@ -41,8 +40,6 @@ function ProjectCard({ project }) {
               </span>
             </div>
           </div>
-
-          {/* Deadline Date */}
           <div className="flex items-center text-gray-600 bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100">
             <Clock className="w-5 h-5 mr-3 text-red-500" />
             <div>
@@ -100,8 +97,6 @@ function App() {
             </p>
           </div>
         </div>
-
-        {/* Grid for displaying projects */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.isArray(userassignedProjects) && userassignedProjects.length > 0 ? (
             userassignedProjects.map(project => <ProjectCard key={project.id} project={project} />)

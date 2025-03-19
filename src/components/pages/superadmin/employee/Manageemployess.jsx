@@ -263,21 +263,46 @@ const EmployeeManagement = () => {
             autoComplete="current-password"
           />
 
-          <input 
-            type="text" 
-            placeholder="Phone Number" 
-            value={newEmployee.phone_num} 
-            onChange={(e) => setNewEmployee({ ...newEmployee, phone_num: e.target.value })} 
-            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 shadow-sm" 
-          />
+<div className="flex items-center border border-gray-300 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+  <span className="pl-3 text-gray-500">+91</span>
+  <input
+    type="text"
+    placeholder="Phone Number"
+    value={newEmployee.phone_num}
+    onChange={(e) => {
+      const inputVal = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+      if (inputVal.length <= 10) {
+        setNewEmployee({ ...newEmployee, phone_num: inputVal });
+      }
+    }}
+    className="w-full p-3 outline-none"
+  />
+</div>
 
-          <input 
+<div className="flex items-center border border-gray-300 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+  <span className="pl-3 text-gray-500">+91</span>
+  <input
+    type="text"
+    placeholder="Emergency Contact" 
+    value={newEmployee.emergency_phone_num} 
+    onChange={(e) => {
+      const inputVal = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+      if (inputVal.length <= 10) {
+        setNewEmployee({ ...newEmployee, emergency_phone_num: inputVal });
+      }
+    }}
+    className="w-full p-3 outline-none"
+  />
+</div>
+
+
+          {/* <input 
             type="text" 
             placeholder="Emergency Contact" 
             value={newEmployee.emergency_phone_num} 
             onChange={(e) => setNewEmployee({ ...newEmployee, emergency_phone_num: e.target.value })} 
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 shadow-sm" 
-          />
+          /> */}
 
           <input 
             type="text" 

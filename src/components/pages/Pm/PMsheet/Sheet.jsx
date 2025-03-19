@@ -3,15 +3,17 @@ import { usePMContext } from "../../../context/PMContext"; // Importing the cont
 import { Loader2, Calendar, User, Briefcase, Clock, FileText, Target, BarChart, Search } from "lucide-react";
 
 export const Sheet = () => {
-    const { performanceData, loading, error, getPerformanceDetails } = usePMContext();
+    const { performanceData, loading, getPerformanceDetails } = usePMContext(); // Removed `error`
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredData, setFilteredData] = useState([]);
 
     useEffect(() => {
-        getPerformanceDetails(); // Fetch performance details on mount
+        getPerformanceDetails();
     }, []);
 
     useEffect(() => {
+        console.log("Performance Data:", performanceData);
+    
         if (performanceData?.data) {
             const filtered = performanceData.data.filter((data) =>
                 (data.user_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
@@ -19,7 +21,7 @@ export const Sheet = () => {
             );
             setFilteredData(filtered);
         }
-    }, [searchQuery, performanceData]);
+    }, [searchQuery, performanceData]); // ✅ Removed `error` from dependencies
 
     return (
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
@@ -81,12 +83,6 @@ export const Sheet = () => {
                                             <span className="text-gray-600 text-lg font-medium">Loading your performance data...</span>
                                             <p className="text-gray-400">Please wait while we fetch your records</p>
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan="10" className="px-6 py-16 text-center text-red-500">
-                                        Error: {error}
                                     </td>
                                 </tr>
                             ) : filteredData.length > 0 ? (

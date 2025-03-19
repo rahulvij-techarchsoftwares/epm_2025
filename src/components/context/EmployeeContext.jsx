@@ -76,7 +76,9 @@ export const EmployeeProvider = ({ children }) => {
       const newEmployee = await response.json();
       setEmployees((prev) => [...prev, newEmployee.data]);
     } catch (err) {
-    alert("❌ Error adding employee:", err);
+      console.error("❌ Error adding employee:", err);
+      alert("❌ Error adding employee: " + err.message);
+      
  
       setError(err.message);
     }

@@ -5,7 +5,7 @@ const Addsheet = () => {
 
   const { submitEntriesForApproval } = useUserContext();
   const [submitting, setSubmitting] = useState(false);
-  
+  const [editIndex, setEditIndex] = useState(null);
   const [view, setView] = useState('dashboard');
   const [rows, setRows] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -33,12 +33,35 @@ const Addsheet = () => {
     });
   };
 
+  const handleEdit = (index, field, value) => {
+    const updatedEntries = [...savedEntries];
+    updatedEntries[index] = { ...updatedEntries[index], [field]: value };
+    setSavedEntries(updatedEntries);
+  };
+
+  const handleDelete = (index) => {
+    const updatedEntries = savedEntries.filter((_, i) => i !== index);
+    setSavedEntries(updatedEntries);
+    console.log("these are saved entries", savedEntries);
+  };
+
+  const handleEditClick = (index) => {
+    setEditIndex(index); 
+    console.log("these are saved entries", savedEntries);
+  };
+
+  const handleSaveClick = () => {
+    setEditIndex(null); 
+    console.log("these are saved entries", savedEntries);
+  };
+
   const handleSave = () => {
     if (!formData.date || !formData.projectId || !formData.hoursSpent) {
       alert("Please fill all required fields before saving.");
       return;
     }
 
+    console.log("these are saved entries", savedEntries);
     
   
     setSavedEntries([...savedEntries, formData]);
@@ -512,7 +535,7 @@ const Addsheet = () => {
               <option value="">--Select--</option>
               <option value="Billable">Billable</option>
               <option value="Non Billable">Non-Billable</option>
-              <option value="In House">In-House</option>
+              <option value="Inhouse">In-House</option>
             </select>
           </div>
 
@@ -635,44 +658,170 @@ const Addsheet = () => {
                 <div className="overflow-x-auto">
                        {/* Display Saved Entries */}
                        {savedEntries.length > 0 && (
-        <div className="mt-5">
-          <h3 className="text-sm font-semibold">Saved Entries:</h3>
-          <table className="min-w-full border-collapse border border-gray-300 text-xs">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-1">Date</th>
-                <th className="border p-1">Project</th>
-                <th className="border p-1">Time Spent</th>
-                <th className="border p-1">Action</th>
-                <th className="border p-1">Work Type</th>
-                <th className="border p-1">Narration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {savedEntries.map((entry, index) => (
-                <tr key={index} className="border">
-                  <td className="border p-1">{entry.date}</td>
-                  <td className="border p-1">{entry.projectId}</td>
-                  <td className="border p-1">{entry.hoursSpent}</td>
-                  <td className="border p-1">{entry.billingStatus}</td>
-                  <td className="border p-1">{entry.status}</td>
-                  <td className="border p-1">{entry.notes}</td>
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-6 animate-fadeIn">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Time Entries</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Date</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Spent</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Type</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Narration</th>
+                  <th className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Modify</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {savedEntries.map((entry, index) => (
+                  <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{entry.date}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {editIndex === index ? (
+                        <select
+                          value={entry.projectId}
+                          onChange={(e) => handleEdit(index, "projectId", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        >
+                          <option value="">Select Project</option>
+                          {loading && <option disabled>Loading...</option>}
+                          {error && <option disabled>Error loading projects</option>}
+                          {Array.isArray(userProjects?.data) && userProjects.data.length > 0 ? (
+                            userProjects.data.map((project) => (
+                              <option key={project.id} value={project.id}>
+                                {project.project_name}
+                              </option>
+                            ))
+                          ) : (
+                            !loading && !error && <option disabled>No projects found</option>
+                          )}
+                        </select>
+                      ) : (
+                        entry.projectId
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {editIndex === index ? (
+                        <input
+                          type="text"
+                          value={entry.hoursSpent}
+                          onChange={(e) => handleEdit(index, "hoursSpent", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      ) : (
+                        entry.hoursSpent
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {editIndex === index ? (
+                        <select
+                          id="billingStatus"
+                          name="billingStatus"
+                          value={entry.billingStatus}
+                          onChange={(e) => handleEdit(index, "billingStatus", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        >
+                          <option value="">--Select--</option>
+                          <option value="Billable">Billable</option>
+                          <option value="Non Billable">Non-Billable</option>
+                          <option value="Inhouse">In-House</option>
+                        </select>
+                      ) : (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          entry.billingStatus === 'Billable' ? 'bg-green-100 text-green-800' :
+                          entry.billingStatus === 'Non Billable' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {entry.billingStatus}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {editIndex === index ? (
+                        <select
+                          id="status"
+                          name="status"
+                          value={entry.status}
+                          onChange={(e) => handleEdit(index, "status", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        >
+                          <option value="">--Select--</option>
+                          <option value="WFO">Work From Office</option>
+                          <option value="WFH">Work from Home</option>
+                        </select>
+                      ) : (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          entry.status === 'WFO' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800'
+                        }`}>
+                          {entry.status}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {editIndex === index ? (
+                        <input
+                          type="text"
+                          value={entry.notes}
+                          onChange={(e) => handleEdit(index, "notes", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      ) : (
+                        entry.notes
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex space-x-2">
+                        {editIndex === index ? (
+                          <button
+                            onClick={handleSaveClick}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150"
+                          >
+                            Save
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(index)}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(index)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {savedEntries.length > 0 && (
-        <div className="flex justify-center mt-3">
+        <div className="flex justify-center mt-6">
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 text-xs"
+            className="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
             disabled={submitting}
           >
-            {submitting ? "Submitting..." : "Submit for Approval"}
+            {submitting ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </span>
+            ) : (
+              "Submit for Approval"
+            )}
           </button>
         </div>
       )}

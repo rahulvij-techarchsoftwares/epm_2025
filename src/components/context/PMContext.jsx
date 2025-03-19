@@ -16,7 +16,7 @@ export const PMProvider = ({ children }) => {
   const [employeeProjects, setEmployeeProjects] = useState([]);
 
 
-
+console.log("assigned", assignedProjects);
   const fetchEmployeeProjects = async () => {
     if (!token) return; // Prevent API call if token is missing
 
@@ -50,12 +50,15 @@ export const PMProvider = ({ children }) => {
       });
 
       setPerformanceData(response.data);
+      
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
+
+  // console.log("performance data", performanceData);
 
 
   const assignProjectToEmployees = async (projectId, employeeIds) => {

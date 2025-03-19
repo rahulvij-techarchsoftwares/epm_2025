@@ -3,7 +3,7 @@ import { usePMContext } from "../../../context/PMContext";
 import { Loader2, Calendar, User, Briefcase, BarChart, Search } from "lucide-react";
 
 export const Tableassigned = () => {
-    const { employeeProjects, loading, error, fetchEmployeeProjects } = usePMContext();
+    const { employeeProjects, loading, fetchEmployeeProjects } = usePMContext();
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredData, setFilteredData] = useState([]);
 
@@ -78,12 +78,6 @@ export const Tableassigned = () => {
                                             <span className="text-gray-600 text-lg font-medium">Loading assigned projects...</span>
                                             <p className="text-gray-400">Please wait while we fetch the data</p>
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center text-red-500">
-                                        Error: {error}
                                     </td>
                                 </tr>
                             ) : filteredData.length > 0 ? (
