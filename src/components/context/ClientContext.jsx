@@ -21,7 +21,7 @@ export const ClientProvider = ({ children }) => {
     return false;
   };
 
-  const addClient = async (name, upworkId, contactDetail) => {
+  const addClient = async (name, hiringId, hirethrough, contactDetail) => {
     setIsLoading(true);
     setMessage("");
 
@@ -34,7 +34,8 @@ export const ClientProvider = ({ children }) => {
         },
         body: JSON.stringify({
           name,
-          upwork_id: upworkId,
+          hire_on_id: hiringId,
+          hire_through: hirethrough,
           contact_detail: contactDetail,
         }),
       });
