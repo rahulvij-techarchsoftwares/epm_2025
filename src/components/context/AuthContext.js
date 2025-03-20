@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate,Navigate } from "react-router-dom";
 const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("userData");
@@ -11,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState(null);
   const navigate = useNavigate();
-
   useEffect(() => {
     const savedUser = localStorage.getItem("userData");
     const token = localStorage.getItem("userToken");
@@ -21,21 +19,18 @@ export const AuthProvider = ({ children }) => {
     }
     setIsLoading(false);
   }, []);
-
   const login = async (email, password) => {
     setIsLoading(true);
     setAuthMessage(null);
-
     try {
       const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
-      if (!response.ok) throw new Error("Login failed ❌");
-
+      if (!response.ok) throw new Error("Login failed , Please check your email or password");
       const data = await response.json();
+      console.log("login response",data)
       if (data.success) {
         const user = data.data.user;
         const token = data.data.token;
@@ -48,7 +43,6 @@ export const AuthProvider = ({ children }) => {
         console.log(user);
         console.log("roles", formattedRole);
         console.log(localStorage.getItem("user_name"));
-
         setAuthMessage("Login successful! ✅");
         console.log("this is user_id",user.id);
         const userRole = user.roles?.[0]?.name?.trim()?.toLowerCase()?.replace(/\s+/g, "");
@@ -64,7 +58,6 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   const logout = () => {
     try {
       localStorage.removeItem("userToken");
@@ -75,15 +68,11 @@ export const AuthProvider = ({ children }) => {
       console.error("Logout error:", error);
     }
   };
-
   // if (isLoading) return <div>Loading...</div>;
-
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading, authMessage }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-
 export const useAuth = () => useContext(AuthContext);

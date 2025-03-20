@@ -101,7 +101,7 @@ export const Projecttable = () => {
             ))}
                         </select>
                       ) : (
-                        project.client.name
+                        project.client ? project.client.name : "No Client"
                       )}
                     </td>
                     <td className="px-6 py-4 text-gray-800 font-medium text-sm">

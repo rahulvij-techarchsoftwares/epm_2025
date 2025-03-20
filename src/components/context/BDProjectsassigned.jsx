@@ -2,9 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/ApiConfig";
 import axios from "axios";
-
+import { useAlert } from "./AlertContext";
 const BDProjectsAssignedContext = createContext();
-
 export const BDProjectsAssignedProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -13,9 +12,9 @@ export const BDProjectsAssignedProvider = ({ children }) => {
   const [assignedData, setAssignedData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const token = localStorage.getItem("userToken");
+    const { showAlert } = useAlert(); 
   const navigate = useNavigate();
   const [performanceSheets, setPerformanceSheets] = useState([]);
-
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
       localStorage.removeItem("userToken");
@@ -24,10 +23,8 @@ export const BDProjectsAssignedProvider = ({ children }) => {
     }
     return false;
   };
-
   const fetchAssigned = async () => {
     setIsLoading(true);
-
     try {
         const response = await axios.get(`${API_URL}/api/assigned-all-projects`, {
             headers: {
@@ -35,7 +32,6 @@ export const BDProjectsAssignedProvider = ({ children }) => {
                 "Content-Type": "application/json",
             },
         });
-
         setAssignedData(response.data.data);
     } catch (error) {
         console.error("Error fetching assigned projects:", error);
@@ -43,8 +39,6 @@ export const BDProjectsAssignedProvider = ({ children }) => {
         setIsLoading(false);
     }
 };
-
-
   // Fetch Projects
   const fetchProjects = async () => {
     setIsLoading(true);
@@ -53,7 +47,6 @@ export const BDProjectsAssignedProvider = ({ children }) => {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` },
       });
-
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       if (response.ok) {
@@ -67,7 +60,6 @@ export const BDProjectsAssignedProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   // Fetch Project Managers
   const fetchProjectManagers = async () => {
     try {
@@ -75,7 +67,6 @@ export const BDProjectsAssignedProvider = ({ children }) => {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` },
       });
-
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       if (response.ok) {
@@ -87,16 +78,12 @@ export const BDProjectsAssignedProvider = ({ children }) => {
       setMessage("An error occurred while fetching project managers.");
     }
   };
-
   
-
   // Assign Project to Project Manager
   const assignProject = async (projectId, managerIds) => { 
     setIsLoading(true);
     setMessage("");
-
     console.log("Assigning project:", projectId, "to managers:", managerIds); // Log request data
-
     try {
         const response = await fetch(`${API_URL}/api/assign-project-manager`, {
             method: "POST",
@@ -109,27 +96,25 @@ export const BDProjectsAssignedProvider = ({ children }) => {
                 project_manager_ids: managerIds  // Ensure it's an array
             }),
         });
-
         console.log("Response Status:", response.status); // Log status code
         const data = await response.json();
         console.log("Response Data:", data); // Log full response data
-
         if (handleUnauthorized(response)) return;
-
         if (response.ok) {
-            setMessage("Project assigned successfully!");
+            // setMessage("Project assigned successfully!");
+            showAlert({ variant: "success", title: "Success", message: "Project assigned successfully!" });
         } else {
-            setMessage(data.message || "Something went wrong!");
+        //     setMessage(data.message || "Something went wrong!");
+            showAlert({ variant: "error", title: "Error", message: "Something went wrong!" });
         }
     } catch (error) {
-        console.error("Error while assigning project:", error); // Log any errors
-        setMessage("Failed to assign project. Please try again.");
+        // console.error("Error while assigning project:", error); // Log any errors
+        // setMessage("Failed to assign project. Please try again.");
+        showAlert({ variant: "error", title: "Error", message: "Failed to assign project. Please try again." });
     } finally {
         setIsLoading(false);
     }
 };
-
-
 const fetchPerformanceDetails = async () => {
   setIsLoading(true);
   try {
@@ -139,7 +124,6 @@ const fetchPerformanceDetails = async () => {
         "Content-Type": "application/json",
       },
     });
-
     setPerformanceData(response.data.data);
   } catch (error) {
     console.error("Error fetching performance details:", error);
@@ -147,11 +131,8 @@ const fetchPerformanceDetails = async () => {
     setIsLoading(false);
   }
 };
-
-
  // Approve a performance sheet
  const approvePerformanceSheet = async (id) => {
-
   try {
       const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
           method: "POST",
@@ -163,22 +144,22 @@ const fetchPerformanceDetails = async () => {
               data: [{ id, status: "approved" }]
           })
       });
-
       if (response.ok) {
           setPerformanceSheets(prevSheets =>
               prevSheets.map(sheet =>
                   sheet.id === id ? { ...sheet, status: "approved" } : sheet
               )
           );
+          // showAlert({ variant: "success", title: "Success", message: "performance sheet Approved" });
       }
+      showAlert({ variant: "success", title: "Success", message: "performance sheet Approved" });
   } catch (error) {
-      console.error("Error approving performance sheet:", error);
+      // console.error("Error approving performance sheet:", error);
+      showAlert({ variant: "error", title: "Error", message: error });
   }
 };
-
 // Reject a performance sheet
 const rejectPerformanceSheet = async (id) => {
-
   try {
       const response = await fetch(`${API_URL}/api/get-approval-performa-sheets`, {
           method: "POST",
@@ -190,26 +171,25 @@ const rejectPerformanceSheet = async (id) => {
               data: [{ id, status: "rejected" }]
           })
       });
-
       if (response.ok) {
           setPerformanceSheets(prevSheets =>
               prevSheets.map(sheet =>
                   sheet.id === id ? { ...sheet, status: "rejected" } : sheet
               )
           );
+          // showAlert({ variant: "success", title: "Success", message: "performance sheet Rejected" });
       }
+      showAlert({ variant: "success", title: "Success", message: "performance sheet Rejected" });
   } catch (error) {
-      console.error("Error rejecting performance sheet:", error);
+      // console.error("Error rejecting performance sheet:", error);
+      showAlert({ variant: "error", title: "Error", message: error });
   }
 };
-
-
   useEffect(() => {
     fetchProjects();
     fetchProjectManagers();
     fetchPerformanceDetails();
   }, []);
-
   return (
     <BDProjectsAssignedContext.Provider value={{ 
       projects, 
@@ -229,7 +209,6 @@ const rejectPerformanceSheet = async (id) => {
     </BDProjectsAssignedContext.Provider>
   );
 };
-
 export const useBDProjectsAssigned = () => {
   return useContext(BDProjectsAssignedContext);
 };

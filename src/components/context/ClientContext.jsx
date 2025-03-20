@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/ApiConfig";
-
+import { useAlert } from "./AlertContext";
 const ClientContext = createContext();
-
 export const ClientProvider = ({ children }) => {
+    const { showAlert } = useAlert();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [clients, setClients] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem("userToken");
   console.log(token);
-
   const handleUnauthorized = (response) => {
     if (response.status === 401) {
       localStorage.removeItem("userToken");
@@ -20,11 +19,9 @@ export const ClientProvider = ({ children }) => {
     }
     return false;
   };
-
   const addClient = async (name, hiringId, hirethrough, contactDetail) => {
     setIsLoading(true);
     setMessage("");
-
     try {
       const response = await fetch(`${API_URL}/api/clients`, {
         method: "POST",
@@ -39,24 +36,23 @@ export const ClientProvider = ({ children }) => {
           contact_detail: contactDetail,
         }),
       });
-
       if (handleUnauthorized(response)) return;
-
       const data = await response.json();
-
       if (response.ok) {
-        setMessage("Client added successfully!");
+        // setMessage("Client added successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Client added successfully!" });
         fetchClients();
       } else {
-        setMessage(data.message);
+        // setMessage(data.message);
+        showAlert({ variant: "error", title: "Error", message: data.message });
       }
     } catch (error) {
-      setMessage("An error occurred. Please try again.");
+      // setMessage("An error occurred. Please try again.");
+      showAlert({ variant: "error", title: "Error", message: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
     }
   };
-
   const fetchClients = async () => {
     setIsLoading(true);
     try {
@@ -66,9 +62,7 @@ export const ClientProvider = ({ children }) => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
       if (handleUnauthorized(response)) return;
-
       const data = await response.json();
       if (response.ok) {
         setClients(data);
@@ -82,11 +76,9 @@ export const ClientProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-  const editClient = async (id, updatedName, updatedUpworkId, updatedContactDetail) => {
+  const editClient = async (id, updatedName, updatedHireId, updatedHireThrough, updatedContactDetail) => {
     setIsLoading(true);
     setMessage("");
-
     try {
       const response = await fetch(`${API_URL}/api/clients/${id}`, {
         method: "PUT",
@@ -96,32 +88,31 @@ export const ClientProvider = ({ children }) => {
         },
         body: JSON.stringify({
           name: updatedName,
-          upwork_id: updatedUpworkId,
+          hire_on_id: updatedHireId,
+          hire_through: updatedHireThrough,
           contact_detail: updatedContactDetail,
         }),
       });
-
       if (handleUnauthorized(response)) return;
-
       const data = await response.json();
-
       if (response.ok) {
-        setMessage("Client updated successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Client updated successfully" });
+        // setMessage("Client updated successfully!");
         fetchClients();
       } else {
-        setMessage(data.message);
+        // setMessage(data.message);
+        showAlert({ variant: "error", title: "Error", message:data.message });
       }
     } catch (error) {
-      setMessage("An error occurred while updating the client.");
+      // setMessage("An error occurred while updating the client.");
+      showAlert({ variant: "error", title: "Error", message: "An error occurred while updating the client." });
     } finally {
       setIsLoading(false);
     }
   };
-
   const deleteClient = async (id) => {
     setIsLoading(true);
     setMessage("");
-
     try {
       const response = await fetch(`${API_URL}/api/clients/${id}`, {
         method: "DELETE",
@@ -129,34 +120,32 @@ export const ClientProvider = ({ children }) => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
       if (handleUnauthorized(response)) return;
-
       if (response.ok) {
-        setMessage("Client deleted successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Client deleted successfully!" });
+        // setMessage("Client deleted successfully!");
         setClients((prevClients) =>
           Array.isArray(prevClients) ? prevClients.filter((client) => client.id !== id) : []
         );
         fetchClients();
       } else {
-        setMessage("Failed to delete client.");
+        // setMessage("Failed to delete client.");
+        showAlert({ variant: "error", title: "Error", message:"Failed to delete client." });
       }
     } catch (error) {
-      setMessage("An error occurred while deleting the client.");
+      // setMessage("An error occurred while deleting the client.");
+      showAlert({ variant: "error", title: "Error", message:"An error occurred while deleting the client." });
     } finally {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchClients();
   }, []);
-
   return (
     <ClientContext.Provider value={{ addClient, fetchClients, editClient, deleteClient, clients, isLoading, message }}>
       {children}
     </ClientContext.Provider>
   );
 };
-
 export const useClient = () => useContext(ClientContext);

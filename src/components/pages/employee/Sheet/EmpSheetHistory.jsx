@@ -28,7 +28,7 @@ export const EmpSheetHistory = () => {
         console.log("this is editing id",editId);
       
         const requestData = {
-          id: editId, // Pass the ID separately
+          id: editId, 
           data: {
             project_id: editedData.project_id,
             date: editedData.date,
@@ -36,6 +36,8 @@ export const EmpSheetHistory = () => {
             work_type: editedData.work_type,
             activity_type: editedData.activity_type,
             narration: editedData.narration,
+            project_type: editedData.project_type,
+            project_type_status: editedData.project_type_status,
           },
         };
       
@@ -50,34 +52,47 @@ export const EmpSheetHistory = () => {
           console.error("Error saving performance sheet:", error);
         }
       };
+    
 
-    const getStatusStyles = (status) => {
-        switch (status.toLowerCase()) {
-            case 'rejected':
+      const getStatusStyles = (status) => {
+        if (!status || typeof status !== "string") {
+            return "bg-gray-50 text-gray-700 ring-1 ring-gray-700/20 hover:bg-gray-100";
+        }
+        
+        const safeStatus = String(status).toLowerCase(); // Ensure it's a string
+        switch (safeStatus) {
+            case "rejected":
                 return "bg-red-50 text-red-700 ring-1 ring-red-700/20 hover:bg-red-100";
-            case 'pending':
+            case "pending":
                 return "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-700/20 hover:bg-yellow-100";
-            case 'approved':
-            case 'completed':
+            case "approved":
+            case "completed":
                 return "bg-green-50 text-green-700 ring-1 ring-green-700/20 hover:bg-green-100";
             default:
                 return "bg-gray-50 text-gray-700 ring-1 ring-gray-700/20 hover:bg-gray-100";
         }
     };
-
+    
     const getStatusIcon = (status) => {
-        switch (status.toLowerCase()) {
-            case 'rejected':
+        if (!status || typeof status !== "string") {
+            return <Clock className="h-4 w-4" />;
+        }
+    
+        const safeStatus = String(status).toLowerCase(); // Ensure it's a string
+        switch (safeStatus) {
+            case "rejected":
                 return <XCircle className="h-4 w-4" />;
-            case 'pending':
+            case "pending":
                 return <Clock className="h-4 w-4" />;
-            case 'approved':
-            case 'completed':
+            case "approved":
+            case "completed":
                 return <CheckCircle className="h-4 w-4" />;
             default:
                 return <Clock className="h-4 w-4" />;
         }
     };
+    
+    
 
     return (
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
@@ -115,6 +130,8 @@ export const EmpSheetHistory = () => {
                                     { label: "Work Type", icon: Target },
                                     { label: "Activity", icon: Clock },
                                     { label: "Time", icon: Clock },
+                                    { label: "Project Type", icon: Clock },
+                                    { label: "Project Type Status", icon: Clock },
                                     { label: "Narration", icon: FileText },
 
                                     { label: "Status", icon: CheckCircle }
@@ -227,6 +244,43 @@ export const EmpSheetHistory = () => {
                 sheet.time
               )}
             </td>
+
+            <td className="px-6 py-4">
+  {editingRow === index ? (
+    <select
+      id="project_type"
+      name="project_type"
+      value={editedData.project_type}
+      onChange={(e) => handleChange(e, "project_type")}
+      className="min-w-full h-9 p-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-xs"
+    >
+      <option value="">Project Type</option>
+      <option value="Fixed">Fixed</option>
+      <option value="Hourly">Hourly</option>
+    </select>
+  ) : (
+    sheet.project_type
+  )}
+</td>
+
+
+<td className="px-6 py-4">
+  {editingRow === index ? (
+    <select
+      id="project_type_status"
+      name="project_type_status"
+      value={editedData.project_type_status}
+      onChange={(e) => handleChange(e, "project_type_status")}
+      className="min-w-full h-9 p-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-xs"
+    >
+      <option value="">Project Type</option>
+      <option value="Tracker">Tracker</option>
+      <option value="Offline">Offline</option>
+    </select>
+  ) : (
+    sheet.project_type_status
+  )}
+</td>
             <td className="px-6 py-4">
               {editingRow === index ? (
                 <input
@@ -252,11 +306,12 @@ export const EmpSheetHistory = () => {
                   {sheet.status}
                 </span>
               )}
-              {['pending', 'rejected'].includes(sheet.status.toLowerCase()) && (
-                <button onClick={() => handleEditClick(index, sheet)} className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-all">
-                  <Pencil className="h-4 w-4 text-gray-600" />
-                </button>
-              )}
+              {sheet.status &&
+                                                ['pending', 'rejected'].includes(String(sheet.status).toLowerCase()) && (
+                                                    <button onClick={() => handleEditClick(index, sheet)} className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-all">
+                                                        <Pencil className="h-4 w-4 text-gray-600" />
+                                                    </button>
+                                                )}
             </td>
           </tr>
         ))

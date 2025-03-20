@@ -6,7 +6,7 @@ export const Sheet = () => {
     const { performanceData, loading, getPerformanceDetails } = usePMContext(); // Removed `error`
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredData, setFilteredData] = useState([]);
-
+    console.log("this is performace data", performanceData);
     useEffect(() => {
         getPerformanceDetails();
     }, []);

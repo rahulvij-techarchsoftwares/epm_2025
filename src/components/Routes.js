@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
+import { AlertProvider } from "./context/AlertContext";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 // import ManageAdmins from "./pages/superadmin/ManageAdmins";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
@@ -33,6 +34,7 @@ import { PMProvider } from "./context/PMContext";
 import Empprojects from "./pages/employee/Empprojects/Empprojects";
 import { LeaveProvider } from "./context/LeaveContext";
 import { HREmployeelayout } from "./pages/hr/Employee/HREmployeelayout";
+import { PMleaves } from "./pages/Pm/PMleaves/PMleaves";
 const RoleBasedRoute = ({ element, allowedRoles }) => {
   // const { user } = useAuth();
   const user = localStorage.getItem("userData");
@@ -52,6 +54,7 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
 
 const AppRoutes = () => {
   return (
+    <AlertProvider>
     <AuthProvider>
     <div className="flex">
 
@@ -134,6 +137,15 @@ const AppRoutes = () => {
           />
 
           <Route
+            path="/projectmanager/manage-leaves"
+            element={
+              <LeaveProvider>
+                <RoleBasedRoute element={<PMleaves/>} allowedRoles={["projectmanager"]} />
+                </LeaveProvider>
+            }
+          />
+
+          <Route
             path="/projectmanager/performance-sheets"
             element={
               <PMProvider>
@@ -192,7 +204,11 @@ const AppRoutes = () => {
           />
           <Route
             path="/hr/leaves"
-            element={<RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["hr"]} />}
+            element={
+              <LeaveProvider>
+                <RoleBasedRoute element={<LeaveManagement/>} allowedRoles={["hr"]} />
+                </LeaveProvider>
+            }
           />
           <Route
             path="/team/profile"
@@ -202,6 +218,8 @@ const AppRoutes = () => {
       </div>
     </div>
     </AuthProvider>
+    </AlertProvider>
+
   );
 };
 export default AppRoutes;

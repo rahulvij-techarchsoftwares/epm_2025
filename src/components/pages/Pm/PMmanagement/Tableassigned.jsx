@@ -11,6 +11,8 @@ export const Tableassigned = () => {
         fetchEmployeeProjects(); // Fetch employee project details on mount
     }, []);
 
+    console.log("these are employee projects", employeeProjects);
+
     useEffect(() => {
         if (Array.isArray(employeeProjects?.data?.projects)) {
             const filtered = employeeProjects.data.projects.filter((project) =>
@@ -23,8 +25,8 @@ export const Tableassigned = () => {
     }, [searchQuery, employeeProjects]);
 
     return (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-            <div className="p-8 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl p-6">
+            <div className="p-6 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 rounded-xl">
                 <div className="flex items-center gap-3 mb-3">
                     <BarChart className="h-10 w-10 text-blue-100" />
                     <h2 className="text-3xl font-bold text-white">Assigned Projects</h2>
@@ -46,61 +48,37 @@ export const Tableassigned = () => {
                 </div>
             </div>
 
-            <div className="max-w-full overflow-x-auto">
-                <div className="min-w-[1102px]">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50/80 text-gray-600 text-sm border-b border-gray-200">
-                                {[ 
-                                    { label: "Project Name", icon: Briefcase },
-                                    { label: "Client Name", icon: User },
-                                    { label: "Assigned Employees", icon: User },
-                                    { label: "Deadline", icon: Calendar }
-                                ].map(({ label, icon: Icon }, index) => (
-                                    <th key={index} className="px-6 py-4 text-left font-semibold">
-                                        <div className="flex items-center gap-2">
-                                            {Icon && <Icon className="h-4 w-4 text-blue-600" />}
-                                            {label}
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-4">
-                                            <div className="relative">
-                                                <div className="h-16 w-16 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
-                                                <Loader2 className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                                            </div>
-                                            <span className="text-gray-600 text-lg font-medium">Loading assigned projects...</span>
-                                            <p className="text-gray-400">Please wait while we fetch the data</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : filteredData.length > 0 ? (
-                                filteredData.map((project, index) => (
-                                    <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out">
-                                        <td className="px-6 py-4 text-gray-700">{project.project_name}</td>
-                                        <td className="px-6 py-4 text-gray-700">{project.client?.name || "N/A"}</td>
-                                        <td className="px-6 py-4 text-gray-700">
-                                            {project.assigned_employees?.map(emp => emp.name).join(", ") || "No Employees Assigned"}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-700">{project.deadline}</td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center text-gray-500">
-                                        No assigned projects found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center col-span-full">
+                        <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
+                        <p className="text-gray-600 text-lg font-medium mt-4">Loading assigned projects...</p>
+                        <p className="text-gray-400">Please wait while we fetch the data</p>
+                    </div>
+                ) : filteredData.length > 0 ? (
+                    filteredData.map((project, index) => (
+                        <div key={index} className="bg-white rounded-lg shadow-lg p-5 border border-gray-200 hover:shadow-xl transition-all">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <Briefcase className="h-5 w-5 text-blue-600" />
+                                {project.project_name}
+                            </h3>
+                            <p className="text-gray-600 flex items-center gap-2 mt-2">
+                                <User className="h-5 w-5 text-blue-600" />
+                                Client: {project.client?.name || "N/A"}
+                            </p>
+                            <p className="text-gray-600 flex items-center gap-2 mt-2">
+                                <User className="h-5 w-5 text-blue-600" />
+                                Employees: {project.assigned_employees?.map(emp => emp.name).join(", ") || "No Employees Assigned"}
+                            </p>
+                            <p className="text-gray-600 flex items-center gap-2 mt-2">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                                Deadline: {project.deadline}
+                            </p>
+                        </div>
+                    ))
+                ) : (
+                    <div className="col-span-full text-center text-gray-500">No assigned projects found.</div>
+                )}
             </div>
         </div>
     );

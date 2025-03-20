@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "./AlertContext";
 const ProjectContext = createContext();
-
 export const ProjectProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [projects, setProjects] = useState([]);
+    const { showAlert } = useAlert();
   const token = localStorage.getItem("userToken");
   const userId = localStorage.getItem("user_id");
   console.log(token);
@@ -19,11 +20,9 @@ export const ProjectProvider = ({ children }) => {
     }
     return false;
   };
-
   const addProject = async (clientId, projectName, requirements, budget, deadline, totalHours) => {
     setIsLoading(true);
     setMessage("");
-  
     const requestBody = {
       sales_team_id: parseInt(userId),
       client_id: parseInt(clientId),
@@ -33,10 +32,8 @@ export const ProjectProvider = ({ children }) => {
       deadline: deadline,
       total_hours: parseInt(totalHours),
     };
-  
     console.log("API URL:", `${API_URL}/api/projects`);
     console.log("Request Payload:", requestBody);
-  
     try {
       const response = await fetch(`${API_URL}/api/projects`, {
         method: "POST",
@@ -46,30 +43,26 @@ export const ProjectProvider = ({ children }) => {
         },
         body: JSON.stringify(requestBody),
       });
-  
       if (handleUnauthorized(response)) return;
-  
       const text = await response.text(); // Get raw response text
       console.log("Raw API Response:", text);
-  
       const data = JSON.parse(text); // Try parsing it as JSON
-  
       if (response.ok) {
-        setMessage("Project added successfully!");
+        // setMessage("Project added successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Project added successfully!" });
         fetchProjects();
       } else {
-        setMessage(data.message || "Failed to add project.");
+        // setMessage(data.message || "Failed to add project.");
+        showAlert({ variant: "error", title: "Error", message: data.message || "Failed to add project." });
       }
     } catch (error) {
       console.error("API Error:", error);
       setMessage("An error occurred. Please try again.");
+      showAlert({ variant: "error", title: "Error", message: error || "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  
-
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
@@ -79,7 +72,6 @@ export const ProjectProvider = ({ children }) => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       if (response.ok) {
@@ -93,11 +85,9 @@ export const ProjectProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   const editProject = async (id, updatedData) => {
     setIsLoading(true);
     setMessage("");
-
     try {
       const response = await fetch(`${API_URL}/api/projects/${id}`, {
         method: "PUT",
@@ -109,24 +99,24 @@ export const ProjectProvider = ({ children }) => {
       });
       if (handleUnauthorized(response)) return;
       const data = await response.json();
-
       if (response.ok) {
-        setMessage("Project updated successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Project updated successfully!" });
+        // setMessage("Project updated successfully!");
         fetchProjects();
       } else {
-        setMessage(data.message);
+        // setMessage(data.message);
+        showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update project." });
       }
     } catch (error) {
-      setMessage("An error occurred while updating the project.");
+      // setMessage("An error occurred while updating the project.");
+      showAlert({ variant: "error", title: "Error", message: "An error occurred while updating the project." });
     } finally {
       setIsLoading(false);
     }
   };
-
   const deleteProject = async (id) => {
     setIsLoading(true);
     setMessage("");
-
     try {
       const response = await fetch(`${API_URL}/api/projects/${id}`, {
         method: "DELETE",
@@ -134,31 +124,29 @@ export const ProjectProvider = ({ children }) => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
       if (handleUnauthorized(response)) return;
-
       if (response.ok) {
-        setMessage("Project deleted successfully!");
+        // setMessage("Project deleted successfully!");
+        showAlert({ variant: "success", title: "Success", message: "Project deleted successfully!" });
         setProjects((prevProjects) => prevProjects.filter((project) => project.id !== id));
       } else {
-        setMessage("Failed to delete project.");
+        // setMessage("Failed to delete project.");
+        showAlert({ variant: "error", title: "Error", message: "Failed to delete project." });
       }
     } catch (error) {
-      setMessage("An error occurred while deleting the project.");
+      // setMessage("An error occurred while deleting the project.");
+      showAlert({ variant: "error", title: "Error", message: "An error occurred while deleting the project." });
     } finally {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchProjects();
   }, []);
-
   return (
     <ProjectContext.Provider value={{ addProject, fetchProjects, editProject, deleteProject, projects, isLoading, message }}>
       {children}
     </ProjectContext.Provider>
   );
 };
-
 export const useProject = () => useContext(ProjectContext);

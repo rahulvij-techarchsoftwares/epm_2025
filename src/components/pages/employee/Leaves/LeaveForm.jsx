@@ -14,8 +14,8 @@ function LeaveForm() {
     status: 'Pending',
   });
 
-  const { addLeave } = useLeave();
-
+  const { addLeave, leaves, loading, error } = useLeave();
+  console.log("leaves data", leaves);
   useEffect(() => {
     if (leaveType === 'Short Leave') {
       setShowHours(true);
@@ -79,39 +79,6 @@ function LeaveForm() {
     }
   };
 
-
-
-
-   // Static data for demonstration
-   const leaves = [
-    {
-      leave_id: 1,
-      start_date: '2024-03-15',
-      end_date: '2024-03-16',
-      leave_type: 'Full Leave',
-      status: 'Approved',
-      reviewed_date: '2024-03-14',
-      reviewed_by: 'John Smith'
-    },
-    {
-      leave_id: 2,
-      start_date: '2024-03-20',
-      end_date: '2024-03-20',
-      leave_type: 'Half Day',
-      status: 'Pending',
-      reviewed_date: null,
-      reviewed_by: null
-    },
-    {
-      leave_id: 3,
-      start_date: '2024-03-25',
-      end_date: '2024-03-25',
-      leave_type: 'Short Leave',
-      status: 'Rejected',
-      reviewed_date: '2024-03-23',
-      reviewed_by: 'Sarah Johnson'
-    }
-  ];
 
   const getStatusBadge = (status) => {
     switch (status.toLowerCase()) {
@@ -263,80 +230,82 @@ function LeaveForm() {
 
       {/* Table for Leave Records */}
       <div className="mt-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="overflow-x-auto rounded  shadow-lg">
+      <div className="overflow-x-auto rounded shadow-lg">
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
         <table className="min-w-full bg-white">
-        <thead>
-          <tr className="bg-blue-50 border-b border-blue-100">
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2" />
-                Start Date
-              </div>
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2" />
-                End Date
-              </div>
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 mr-2" />
-                Leave Type
-              </div>
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              Approve Date
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              Approved By
-            </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {leaves.map((leave) => (
-            <tr 
-              key={leave.leave_id} 
-              className="hover:bg-blue-50 transition-colors duration-200"
-            >
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {leave.start_date}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {leave.end_date}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {leave.leave_type}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {getStatusBadge(leave.status)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {leave.reviewed_date || 'N/A'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {leave.reviewed_by || 'N/A'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                <button 
-                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
-                  onClick={() => console.log('View details for leave:', leave.leave_id)}
-                >
-                  View Details
-                </button>
-              </td>
+          <thead>
+            <tr className="bg-blue-50 border-b border-blue-100">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Start Date
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  End Date
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                <div className="flex items-center">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Leave Type
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                Reason
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                Hours
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">
+                Action
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-        </div>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {leaves.map((leave) => (
+              <tr 
+                key={leave.id} 
+                className="hover:bg-blue-50 transition-colors duration-200"
+              >
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {leave.start_date}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {leave.end_date}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {leave.leave_type}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(leave.status)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {leave.reason || "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {leave.hours !== null ? leave.hours : "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <button 
+                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                    onClick={() => console.log('View details for leave:', leave.id)}
+                  >
+                    Edit Details
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+    </div>
     </>
   );
 }

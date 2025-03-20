@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useProject } from "../../../context/ProjectContext";
-import { useClient } from "../../../context/ClientContext"; // Importing useClient hook
+import { useClient } from "../../../context/ClientContext"; 
 import { Edit, Save, Trash2, Loader2 } from "lucide-react";
 
 export const Projecttable = () => {
@@ -21,7 +21,7 @@ export const Projecttable = () => {
 
   const handleEditClick = (project) => {
     setEditProjectId(project.id);
-    setEditClientId(project.client.id); 
+    setEditClientId(project.client.id);
     setEditProjectName(project.project_name);
     setEditRequirements(project.requirements || ""); 
     setEditBudget(project.budget || ""); 
@@ -32,11 +32,11 @@ export const Projecttable = () => {
     if (!editProjectName.trim()) return;
 
     const updatedData = {
-      client_id: editClientId, 
-      project_name: editProjectName, 
+      client_id: editClientId,
+      project_name: editProjectName,
       requirements: editRequirements || null, 
       budget: editBudget ? parseFloat(editBudget) : null, 
-      deadline: editDeadline || null, 
+      deadline: editDeadline || null,
     };
 
     setIsUpdating(true);
@@ -101,7 +101,7 @@ export const Projecttable = () => {
             ))}
                         </select>
                       ) : (
-                        project.client.name
+                        project.client ? project.client.name : "No Client"
                       )}
                     </td>
                     <td className="px-6 py-4 text-gray-800 font-medium text-sm">

@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "./AlertContext";
 const RoleContext = createContext(null);
-
 export function RoleProvider({ children }) {
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const token = localStorage.getItem("userToken");
+  const { showAlert } = useAlert();
   console.log(token);
   const navigate = useNavigate();
     const handleUnauthorized = (response) => {
@@ -18,13 +19,10 @@ export function RoleProvider({ children }) {
       }
       return false;
     };
-  
   const addRole = async (name) => {
     setIsLoading(true);
     setMessage(null);
-
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/roles`, {
         method: "POST",
@@ -37,26 +35,26 @@ export function RoleProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("API Response:", data);
-
       if (response.ok) {
-        setMessage("Role added successfully! ✅");
+        // setMessage("Role added successfully! :white_check_mark:");
+        showAlert({ variant: "success", title: "Success", message: "Role updated successfully" });
+fetchRoles();
       } else {
-        setMessage(data.message || "Failed to add role ❌");
+        // setMessage(data.message || "Failed to add role :x:");
+        showAlert({ variant: "error", title: "Error", message: "Failed to add role :x:" });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong! ❌");
+      // setMessage("Something went wrong! :x:");
+      showAlert({ variant: "error", title: "Error", message: "Something went wrong! :x:" });
     } finally {
       setIsLoading(false);
     }
   };
-
   const fetchRoles = async () => {
     setIsLoading(true);
     setMessage(null);
-
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/roles`, {
         method: "GET",
@@ -66,29 +64,25 @@ export function RoleProvider({ children }) {
         },
       });
       if (handleUnauthorized(response)) return;
-
       const data = await response.json();
       console.log("Fetched Roles:", data);
-
       if (response.ok) {
         setRoles(Array.isArray(data.data) ? data.data : []);
       } else {
-        setMessage(data.message || "Failed to fetch roles ❌");
+        setMessage(data.message || "Failed to fetch roles :x:");
         setRoles([]);
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong! ❌");
+      setMessage("Something went wrong! :x:");
       setRoles([]);
     } finally {
       setIsLoading(false);
     }
   };
-
   const deleteRole = async (roleId) => {
     setIsLoading(true);
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/roles/${roleId}`, {
         method: "DELETE",
@@ -96,29 +90,28 @@ export function RoleProvider({ children }) {
           Authorization: `Bearer ${token}`,
         },
       });
-      
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("Delete Response:", data);
-
       if (response.ok) {
-        setMessage("Role deleted successfully! ✅");
+        showAlert({ variant: "success", title: "Success", message: "Role Deleted successfully" });
+        // setMessage("Role deleted successfully! :white_check_mark:");
         setRoles((prevRoles) => prevRoles.filter((role) => role.id !== roleId));
       } else {
-        setMessage(data.message || "Failed to delete role ❌");
+        // setMessage(data.message || "Failed to delete role :x:");
+        showAlert({ variant: "error", title: "Error", message: "Failed to delete role :x:" });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong while deleting role! ❌");
+      setMessage("Something went wrong while deleting role! :x:");
+      showAlert({ variant: "error", title: "Error", message: "Failed to delete role :x:" });
     } finally {
       setIsLoading(false);
     }
   };
-
   const updateRole = async (roleId, newName) => {
     setIsLoading(true);
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/roles/${roleId}`, {
         method: "PUT",
@@ -131,32 +124,32 @@ export function RoleProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("Update Response:", data);
-
       if (response.ok) {
-        setMessage("Role updated successfully! ✅");
+        // setMessage("Role updated successfully! :white_check_mark:");
+        showAlert({ variant: "success", title: "Success", message: "Role updated successfully" });
         setRoles((prevRoles) =>
           prevRoles.map((role) =>
             role.id === roleId ? { ...role, name: newName } : role
           )
         );
       } else {
-        setMessage(data.message || "Failed to update role ❌");
+        // setMessage(data.message || "Failed to update role :x:");
+        showAlert({ variant: "error", title: "Error", message: "Failed to update role :x:" });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong while updating role! ❌");
+      // setMessage("Something went wrong while updating role! :x:");
+      showAlert({ variant: "error", title: "Error", message: "Something went wrong while updating role!" });
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <RoleContext.Provider value={{ addRole, deleteRole, fetchRoles, updateRole, roles, isLoading, message }}>
       {children}
     </RoleContext.Provider>
   );
 }
-
 export const useRole = () => {
   const context = useContext(RoleContext);
   if (!context) {

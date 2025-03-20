@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { API_URL } from "../utils/ApiConfig";
-
+import Alert from "../components/Alerts";
+import { useAlert } from "./AlertContext";
 const EmployeeContext = createContext(undefined);
 export const EmployeeProvider = ({ children }) => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [alert, setAlert] = useState(null);
-
+  const { showAlert } = useAlert();
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -41,57 +41,40 @@ export const EmployeeProvider = ({ children }) => {
   const addEmployee = async (employeeData) => {
     try {
       const token = localStorage.getItem("userToken");
-  
       const formData = new FormData();
       formData.append("name", employeeData.name);
       formData.append("email", employeeData.email);
       formData.append("password", employeeData.password);
-      formData.append("team_id", employeeData.team_id ? employeeData.team_id.toString() : ""); // Ensure it's a string
+      formData.append("team_id", employeeData.team_id ? employeeData.team_id.toString() : "");
       formData.append("address", employeeData.address);
       formData.append("phone_num", employeeData.phone_num);
       formData.append("emergency_phone_num", employeeData.emergency_phone_num);
-      formData.append("role_id", employeeData.role_id ? employeeData.role_id.toString() : ""); // Ensure it's a string
-      formData.append("pm_id", employeeData.pm_id ? employeeData.pm_id.toString() : ""); // Ensure it's a string
-      formData.append("profile_pic", employeeData.profile_pic); // File must be appended
-  
-      console.log("📤 Sending employee data:", Object.fromEntries(formData)); // Log without file
-  
+      formData.append("role_id", employeeData.role_id ? employeeData.role_id.toString() : "");
+      formData.append("pm_id", employeeData.pm_id ? employeeData.pm_id.toString() : "");
+      formData.append("profile_pic", employeeData.profile_pic);
       const response = await fetch(`${API_URL}/api/users`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-  
-      console.log("✅ Response after adding employee:", response);
-  
       if (!response.ok) {
-      //  showAlert("success", "success", "User added succesfully.");
-     
-        const errorResponse = await response.text();
-        throw new Error(`Failed to create employee: ${errorResponse}`);
-      }
-  
+        const errorResponse = await response.json(); // Parse JSON response
+        const errorMessage = errorResponse?.errors?.email?.[0] || errorResponse?.message || "Something went wrong";
+        showAlert({ variant: "error", title: "Error", message: errorMessage });
+        console.log("error", errorMessage);
+        throw new Error(errorMessage);
+    }
       const newEmployee = await response.json();
       setEmployees((prev) => [...prev, newEmployee.data]);
+      showAlert({ variant: "success", title: "Success", message: "Employee added successfully" });
     } catch (err) {
-      console.error("❌ Error adding employee:", err);
-      alert("❌ Error adding employee: " + err.message);
-      
- 
-      setError(err.message);
+      showAlert({ variant: "error", title: "Error", message: err.message });
     }
   };
-  
-  
-  
   const updateEmployee = async (id, updatedData) => {
-    console.log("Sending updatedData:", updatedData);  
-
+    console.log("Sending updatedData:", updatedData);
     try {
         const token = localStorage.getItem("userToken");
-        
         const requestBody = {
             name: updatedData.name,
             email: updatedData.email,
@@ -102,9 +85,7 @@ export const EmployeeProvider = ({ children }) => {
             profile_pic: updatedData.profile_pic || null, // Ensure null if no file
             role_id: updatedData.role_id,
         };
-
         console.log("Final requestBody:", requestBody); // Debugging
-
         const response = await fetch(`${API_URL}/api/users/${id}`, {
             method: "PUT",
             headers: {
@@ -114,42 +95,39 @@ export const EmployeeProvider = ({ children }) => {
             body: JSON.stringify(requestBody),
         });
         fetchEmployees();
+        showAlert({ variant: "success", title: "Success", message: "Employee updated successfully" });
         console.log("Response:", response);
-
         if (!response.ok) {
+          showAlert({ variant: "error", title: "Error", message: "Failed to update employee" });
             throw new Error("Failed to update employee");
         }
     } catch (err) {
         console.error("Error:", err.message);
+        showAlert({ variant: "error", title: "Error", message: err.message });
         setError(err.message);
     }
 };
-
-  
-  
-  
-  
-  
-
-
-
-  const deleteEmployee = async (id) => {
-    try {
-      const token = localStorage.getItem("userToken");
-      const response = await fetch(`${API_URL}/api/users/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete employee");
-      }
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (err) {
-      setError(err.message);
+const deleteEmployee = async (id) => {
+  try {
+    const token = localStorage.getItem("userToken");
+    const response = await fetch(`${API_URL}/api/users/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete employee");
     }
-  };
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+    showAlert({ variant: "success", title: "Success", message: "Deleted Successfully" });
+    // showAlert("success", "Success", "Deleted Successfully."); // :white_check_mark: Success alert
+  } catch (err) {
+    console.error(":x: Error deleting employee:", err);
+    showAlert({ variant: "error", title: "Error", message: err.message });
+    // showAlert("error", "Failed", err.message); // :white_check_mark: Error alert added
+  }
+};
   return (
     <EmployeeContext.Provider value={{ employees, loading, error, fetchEmployees, addEmployee, updateEmployee, deleteEmployee }}>
       {children}

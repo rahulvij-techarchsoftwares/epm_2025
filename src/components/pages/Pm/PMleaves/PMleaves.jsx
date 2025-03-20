@@ -1,24 +1,24 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Loader2, Calendar, User, Clock, FileText, BarChart, Search } from "lucide-react";
-import { useLeave } from "../../context/LeaveContext";
+import { useLeave } from "../../../context/LeaveContext";
 
-export const LeaveManagement = () => {
-    const { hrLeaveDetails, hrLeave, postStatuses, loading, error } = useLeave();
+export const PMleaves = () => {
+    const { pmleaves, pmLeavesfnc, postStatuses, loading, error } = useLeave();
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState([]);
-    console.log("hr leaves", hrLeave);
+    console.log("PM leaves", pmleaves);
     useEffect(() => {
-        hrLeaveDetails();
+        pmLeavesfnc();
     }, []);
 
     useEffect(() => {
         if (searchTerm) {
-            const filtered = hrLeave.filter(leave => leave.employee_name.toLowerCase().includes(searchTerm.toLowerCase()));
+            const filtered = pmleaves.filter(leave => leave.employee_name.toLowerCase().includes(searchTerm.toLowerCase()));
             setFilteredData(filtered);
         } else {
             setFilteredData([]);
         }
-    }, [searchTerm, hrLeave]);
+    }, [searchTerm, pmleaves]);
 
     const handleStatusChange = async (id, newStatus) => {
         const updatedStatus = [{ id, status: newStatus }];
@@ -31,7 +31,7 @@ export const LeaveManagement = () => {
             <div className="p-8 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500">
                 <div className="flex items-center gap-3 mb-3">
                     <BarChart className="h-10 w-10 text-blue-100" />
-                    <h2 className="text-3xl font-bold text-white">Manage Leaves</h2>
+                    <h2 className="text-3xl font-bold text-white">sssManage Leaves</h2>
                 </div>
                 <p className="text-blue-100 text-lg">Track and manage leave requests</p>
             </div>
@@ -72,7 +72,7 @@ export const LeaveManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {(searchTerm ? filteredData : hrLeave).map((leave, index) => (
+                            {(searchTerm ? filteredData : pmleaves).map((leave, index) => (
                                 <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 ease-in-out">
                                     <td className="px-6 py-4 text-gray-700">{leave.start_date}</td>
                                     <td className="px-6 py-4 text-gray-700">{leave.user_name}</td>
@@ -98,6 +98,8 @@ export const LeaveManagement = () => {
                             ))}
                         </tbody>
                     </table>
+                    {loading && <p className="text-center text-blue-600">Updating status...</p>}
+                    {error && <p className="text-center text-red-600">Error: {error}</p>}
                 </div>
             </div>
         </div>

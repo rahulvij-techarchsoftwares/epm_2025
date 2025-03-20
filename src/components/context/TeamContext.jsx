@@ -1,13 +1,13 @@
 import { createContext, useContext, useState, useMemo } from "react";
 import { API_URL } from "../utils/ApiConfig";
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "./AlertContext";
 const TeamContext = createContext(null);
-
 export function TeamProvider({ children }) {
   const [teams, setTeams] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
-
+  const { showAlert } = useAlert();
     const navigate = useNavigate();
       const handleUnauthorized = (response) => {
         if (response.status === 401) {
@@ -20,9 +20,7 @@ export function TeamProvider({ children }) {
   const addTeam = async (name) => {
     setIsLoading(true);
     setMessage(null);
-
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/teams`, {
         method: "POST",
@@ -35,27 +33,26 @@ export function TeamProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("API Response:", data);
-
       if (response.ok) {
-        setMessage("Team added successfully! ✅");
+        // setMessage("Team added successfully! :white_check_mark:");
+        showAlert({ variant: "success", title: "Success", message: "Team added successfully" });
         fetchTeams();
       } else {
-        setMessage(data.message || "Failed to add team ❌");
+        // setMessage(data.message || "Failed to add team :x:");
+        showAlert({ variant: "error", title: "Error", message: data.message });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong! ❌");
+      // setMessage("Something went wrong! :x:");
+      showAlert({ variant: "error", title: "Error", message: error });
     } finally {
       setIsLoading(false);
     }
   };
-
   const fetchTeams = async () => {
     setIsLoading(true);
     setMessage(null);
-
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/teams`, {
         method: "GET",
@@ -67,26 +64,23 @@ export function TeamProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("Fetched Teams:", data);
-
       if (response.ok) {
         setTeams(Array.isArray(data.data) ? data.data : []);
       } else {
-        setMessage(data.message || "Failed to fetch teams ❌");
+        setMessage(data.message || "Failed to fetch teams :x:");
         setTeams([]);
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong! ❌");
+      setMessage("Something went wrong! :x:");
       setTeams([]);
     } finally {
       setIsLoading(false);
     }
   };
-
   const deleteTeam = async (teamId) => {
     setIsLoading(true);
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/teams/${teamId}`, {
         method: "DELETE",
@@ -97,25 +91,25 @@ export function TeamProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("Delete Response:", data);
-
       if (response.ok) {
-        setMessage("Team deleted successfully! ✅");
+        // setMessage("Team deleted successfully! :white_check_mark:");
+        showAlert({ variant: "success", title: "Success", message: "Team Deleted successfully" });
         setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
       } else {
-        setMessage(data.message || "Failed to delete team ❌");
+        // setMessage(data.message || "Failed to delete team :x:");
+        showAlert({ variant: "error", title: "Error", message: data.message || "Failed to delete team :x:"});
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong while deleting team! ❌");
+      // setMessage("Something went wrong while deleting team! :x:");
+      showAlert({ variant: "error", title: "Error", message: "Something went wrong while deleting team!,try after some time"});
     } finally {
       setIsLoading(false);
     }
   };
-
   const updateTeam = async (teamId, newName) => {
     setIsLoading(true);
     const token = localStorage.getItem("userToken");
-
     try {
       const response = await fetch(`${API_URL}/api/teams/${teamId}`, {
         method: "PUT",
@@ -128,32 +122,32 @@ export function TeamProvider({ children }) {
       if (handleUnauthorized(response)) return;
       const data = await response.json();
       console.log("Update Response:", data);
-
       if (response.ok) {
-        setMessage("Team updated successfully! ✅");
+        // setMessage("Team updated successfully! :white_check_mark:");
+        showAlert({ variant: "success", title: "Success", message: "Team updated successfully" });
         setTeams((prevTeams) =>
           prevTeams.map((team) =>
             team.id === teamId ? { ...team, name: newName } : team
           )
         );
       } else {
-        setMessage(data.message || "Failed to update team ❌");
+        // setMessage(data.message || "Failed to update team :x:");
+        showAlert({ variant: "error", title: "Error", message: data.message || "Failed to update team :x:"});
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Something went wrong while updating team! ❌");
+      // setMessage("Something went wrong while updating team! :x:");
+      showAlert({ variant: "error", title: "Error", message: error.message || "Something went wrong while updating team!, try after some time"});
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <TeamContext.Provider value={{ addTeam, deleteTeam, fetchTeams, updateTeam, teams, isLoading, message }}>
       {children}
     </TeamContext.Provider>
   );
 }
-
 export const useTeam = () => {
   const context = useContext(TeamContext);
   if (!context) {

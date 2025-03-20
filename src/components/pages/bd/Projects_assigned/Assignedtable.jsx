@@ -3,6 +3,7 @@ import { useBDProjectsAssigned } from "../../../context/BDProjectsassigned";
 import { Edit, Save, Trash2, Loader2, Calendar, Users, Building2, Clock } from "lucide-react";
 
 function ProjectCard({ project, editProjectId, editProjectName, setEditProjectName, handleEditClick }) {
+
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
@@ -39,17 +40,23 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
 
       <div className="p-6 space-y-5">
         <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-          <Users className="h-4 w-4 text-blue-600 mr-3" />
-          <div>
-            <span className="font-medium text-gray-700 block mb-1">Project Manager</span>
-            {project.project_manager?.name || "N/A"}
-          </div>
+        <Users className="h-4 w-4 text-blue-600 mr-3" />
+  <div>
+    <span className="font-medium text-gray-700 block mb-1">Project Managers</span>
+    {Array.isArray(project.project_managers) && project.project_managers.length > 0 ? (
+      project.project_managers.map((pm) => (
+        <div key={pm.id} className="text-gray-700">{pm.name}</div>
+      ))
+    ) : (
+      "N/A"
+    )}
+  </div>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center text-sm font-medium text-gray-700">
             <Users className="h-4 w-4 text-blue-600 mr-2" />
-            <span>Team Members</span>
+            <span>Assigned Users</span>
           </div>
           {Array.isArray(project.assigned_users) && project.assigned_users.length > 0 ? (
             <div className="grid gap-2">
@@ -66,9 +73,7 @@ function ProjectCard({ project, editProjectId, editProjectName, setEditProjectNa
               ))}
             </div>
           ) : (
-            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
-              No team members assigned
-            </div>
+            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">No assigned users</div>
           )}
         </div>
 
@@ -91,7 +96,8 @@ export const Assignedtable = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
+  console.log("this is assigned data", assignedData);
+    useEffect(() => {
     fetchAssigned();
   }, []);
 

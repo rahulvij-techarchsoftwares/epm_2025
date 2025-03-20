@@ -55,6 +55,7 @@ export function Sidebar() {
       { name: "Projects Assigned", path: "/projectmanager/assigned" },
       { name: "Project Management", path: "/projectmanager/assign" },
       { name: "Performance Sheets", path: "/projectmanager/performance-sheets" },
+      { name: "Manage Leaves", path: "/projectmanager/manage-leaves" },
     ],
     [Roles.TEAM]: [
       { name: "Dashboard", path: "/team/dashboard" },
@@ -73,7 +74,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="bg-white shadow-lg fixed left-0 top-0 h-full w-72 z-40 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-gray-200 flex flex-col justify-between my-2.5 mx-1.5">
+    <aside className="bg-white shadow-lg fixed left-0 top-0 h-full w-72 z-10 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-gray-200 flex flex-col justify-between my-2.5 mx-1.5">
       <div>
         <div className="relative flex items-center py-6 px-4 text-center border-b border-gray-200">
           <img
