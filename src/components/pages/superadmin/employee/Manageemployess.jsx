@@ -194,7 +194,7 @@ const EmployeeManagement = () => {
         >
           <option value="name">Name</option>
           <option value="email">Email</option>
-          <option value="department">Department</option>
+          <option value="team">Department</option>
         </select>
 
         <button 
