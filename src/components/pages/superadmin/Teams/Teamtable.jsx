@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTeam } from "../../../context/TeamContext";
 import { Loader2 } from "lucide-react";
-
+import { exportToExcel } from "../../../components/excelUtils";
 export const Teamtable = () => {
   const { teams, fetchTeams, deleteTeam, updateTeam, isLoading } = useTeam();
   const [editingTeam, setEditingTeam] = useState(null);
@@ -23,9 +23,17 @@ export const Teamtable = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm p-6 mb-3.5">
-      <h2 className="text-xl font-semibold text-gray-800">Team Management</h2>
+    <div className="flex justify-between items-center">
+  <h2 className="text-xl font-semibold text-gray-800">Team Management</h2>
+  <button
+    onClick={() => exportToExcel(teams, "teams.xlsx")}
+    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+  >
+    Export to Excel
+  </button>
+</div>
+
       <p className="text-sm text-gray-500 mt-1">Manage teams and update details</p>
-      
       <div className="mt-4 overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead className="border-b border-gray-200 bg-gray-100">

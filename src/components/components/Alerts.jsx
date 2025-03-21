@@ -40,7 +40,7 @@ const Alert = ({ variant, title, message, showLink = false, linkHref = "#", link
         </div>
         <button
           className="ml-auto text-gray-500 hover:text-gray-700"
-          onClick={onClose} // Manually close alert
+          onClick={onClose}   
         >
           :heavy_multiplication_x:
         </button>

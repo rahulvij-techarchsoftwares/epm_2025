@@ -81,7 +81,7 @@ export function Sidebar() {
             className="rounded-3xl h-14 w-14 mx-2.5"
             src={userimage}
             alt=""
-          />
+          />  
           <h2 className="text-lg font-semibold text-gray-700 capitalize">
             {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Panel
           </h2>

@@ -205,7 +205,6 @@ const EmployeeManagement = () => {
         </button>
       </div>
 
-      {/* Import & Export Section */}
       <div className="flex items-center gap-3 border p-3 rounded-lg shadow-md bg-white relative">
         <button
           onClick={() => exportToExcel(employees, "employees.xlsx")}
@@ -214,7 +213,6 @@ const EmployeeManagement = () => {
           Export to Excel
         </button>
 
-        {/* Import Button with Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowImportOptions(!showImportOptions)}

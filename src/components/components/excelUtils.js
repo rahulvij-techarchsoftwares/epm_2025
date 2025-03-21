@@ -99,35 +99,32 @@ export const fetchGoogleSheetData = async (url, importEmployees) => {
       "address",
       "team_id",
     ];
-    // Validate and clean data
+
     const validData = parsedData
       .map((row) => {
         let mappedRow = {};
         requiredColumns.forEach((col) => {
           let value = row[col];
-          // Ensure correct types
+
           if (value === undefined || value === "") {
-            mappedRow[col] = ""; // Convert empty values to empty strings
+            mappedRow[col] = ""; 
           } else if (!isNaN(value) && col !== "phone_num" && col !== "emergency_phone_num") {
-            mappedRow[col] = Number(value); // Convert numbers properly
+            mappedRow[col] = Number(value); 
           } else {
-            mappedRow[col] = value.trim(); // Clean string values
+            mappedRow[col] = value.trim(); 
           }
         });
-        // :small_blue_diamond: Remove `id` (Backend auto-generates it)
-        // :small_blue_diamond: Add a default password (Temporary fix)
-        // :small_blue_diamond: Profile pic is not required, so send null
         mappedRow.password = "DefaultPass123";
         mappedRow.profile_pic = null;
         return mappedRow;
       })
       .filter((emp) => emp.name && emp.phone_num && isValidEmail(emp.email));
-    console.log("Valid Data After Filtering:", validData); // Debugging
+    console.log("Valid Data After Filtering:", validData); 
     if (validData.length === 0) {
       alert("Invalid Google Sheet data. Ensure valid email addresses.");
       return;
     }
-    importEmployees(validData); // :white_check_mark: Import only valid data
+    importEmployees(validData); 
   } catch (error) {
     console.error("Failed to fetch Google Sheet data:", error);
   }

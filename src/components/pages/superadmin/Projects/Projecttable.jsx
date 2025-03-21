@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useProject } from "../../../context/ProjectContext";
 import { useClient } from "../../../context/ClientContext"; 
 import { Edit, Save, Trash2, Loader2 } from "lucide-react";
-
+import { exportToExcel,importFromExcel ,useImportEmployees,fetchGoogleSheetData} from "../../../components/excelUtils";
 export const Projecttable = () => {
   const { projects, fetchProjects, editProject, deleteProject, isLoading } = useProject();
   const { clients } = useClient(); // Getting clients data
@@ -14,19 +14,52 @@ export const Projecttable = () => {
   const [editDeadline, setEditDeadline] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
+
+ const [filterBy, setFilterBy] = useState("name"); // Default filter by name
+    const [showImportOptions, setShowImportOptions] = useState(false); // FIX: Define state
   useEffect(() => {
     fetchProjects();
   }, []);
 
+
+
+
+
+  // const filteredProjects = projects?.filter((project) => {
+  //   if (!project || !project[filterBy]) return false;
+  //   return project[filterBy].toString().toLowerCase().includes(searchQuery.toLowerCase());
+  // });
+  
+  const filteredProjects = projects.filter((project) => {
+    let value = "";
+    
+    if (filterBy === "client_name") {
+      value = project.client?.name?.toLowerCase() || "";
+    } else {
+      value = project[filterBy]?.toLowerCase() || "";
+    }
+    
+    return value.includes(searchQuery.toLowerCase());
+  });
+  
+
+  const clearFilter = () => {
+    setSearchQuery("");
+    setFilterBy("name");
+  };
+
+
   const handleEditClick = (project) => {
     setEditProjectId(project.id);
-    setEditClientId(project.client.id);
+    setEditClientId(project.client?.id || ""); // Prevents crash if client is missing
     setEditProjectName(project.project_name);
     setEditRequirements(project.requirements || ""); 
     setEditBudget(project.budget || ""); 
     setEditDeadline(project.deadline || ""); 
   };
+  
 
   const handleSaveClick = async () => {
     if (!editProjectName.trim()) return;
@@ -56,9 +89,52 @@ export const Projecttable = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+         <div className="flex justify-between items-center">
       <div className="p-6 pb-3">
         <h2 className="text-xl font-semibold text-gray-800">Projects Management</h2>
         <p className="text-sm text-gray-500 mt-1">View, edit and manage Projects</p>
+      </div>
+        <div className="flex flex-wrap items-center gap-3 border p-3 rounded-lg shadow-md bg-white">
+              <input
+                type="text"
+                placeholder={`Search by ${filterBy}`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-3 py-2 border rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              
+              <select
+  value={filterBy}
+  onChange={(e) => setFilterBy(e.target.value)}
+  className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+>
+  <option value="client_name">Client Name</option>
+  <option value="project_name">Project Name</option>
+</select>
+
+
+      
+              <button 
+                onClick={() => clearFilter()} 
+                className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex gap-3">
+            <button
+                  onClick={() => setShowImportOptions(!showImportOptions)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                >
+                  Import
+                </button>
+            <button
+        onClick={() => exportToExcel(clients.data || [], "clients.xlsx")}
+        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+      >
+        Export to Excel
+      </button>
+      </div>
       </div>
 
       <div className="max-w-full overflow-x-auto">
@@ -87,7 +163,7 @@ export const Projecttable = () => {
                   </td>
                 </tr>
               ) : projects?.length > 0 ? (
-                projects.map((project) => (
+                filteredProjects.map((project) => (
                   <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 text-gray-800 font-medium text-sm">
                       {editProjectId === project.id ? (

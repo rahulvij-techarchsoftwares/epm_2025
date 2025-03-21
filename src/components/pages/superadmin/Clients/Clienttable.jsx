@@ -1,21 +1,62 @@
 import React, { useEffect, useState } from "react";
 import { useClient } from "../../../context/ClientContext";
 import { Edit, Save, Trash2, Loader2 } from "lucide-react";
-
+import { exportToExcel,importFromExcel ,useImportEmployees,fetchGoogleSheetData} from "../../../components/excelUtils";
+import { FaFileExcel, FaGoogle } from "react-icons/fa"; 
 export const Clienttable = () => {
   const { clients, fetchClients, isLoading, editClient, deleteClient } = useClient();
   const [editClientId, setEditClientId] = useState(null);
   const [editClientName, setEditClientName] = useState("");
   const [edithireId, setEdithireId] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
   const [edithirethrough, setEdithirethrough] = useState("");
+    const [filterBy, setFilterBy] = useState("name"); // Default filter by name
   const [editContactDetail, setEditContactDetail] = useState("");
+    const [showImportOptions, setShowImportOptions] = useState(false); // FIX: Define state
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+
+  const [importType, setImportType] = useState(null); // Track selected import type
+  const [googleSheetUrl, setGoogleSheetUrl] = useState("");
+//  const { importEmployees } = useImportEmployees(); // ✅ Extract correctly
+
   console.log("clients fetched", clients);
   useEffect(() => {
     fetchClients();
   }, []);
   console.log(clients);
+
+  const filteredEmployees = clients?.data?.filter((client) => {
+    if (!client || !client[filterBy]) return false;
+    return client[filterBy].toString().toLowerCase().includes(searchQuery.toLowerCase());
+  });
+  
+
+  const clearFilter = () => {
+    setSearchQuery("");
+    setFilterBy("name");
+  };
+
+    // const handleGoogleSheetImport = () => {
+    //   if (!googleSheetUrl) {
+    //     alert("Please enter a Google Sheets link.");
+    //     return;
+    //   }
+    //   fetchGoogleSheetData(googleSheetUrl, importEmployees);
+    // };
+
+  // const handleImport = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
+  
+  //   importFromExcel(file, (data) => {
+  //     console.log("Imported Data (Before adding to system):", data);
+  //     importEmployees(data); // ✅ Add employees to the system
+  //   });
+  // };
+
+  
 
   const handleEditClick = (client) => {
     setEditClientId(client.id);
@@ -46,9 +87,52 @@ export const Clienttable = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex justify-between items-center">
       <div className="p-6 pb-3">
         <h2 className="text-xl font-semibold text-gray-800">Clients Management</h2>
         <p className="text-sm text-gray-500 mt-1">View, edit and manage Clients</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 border p-3 rounded-lg shadow-md bg-white">
+        <input
+          type="text"
+          placeholder={`Search by ${filterBy}`}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="px-3 py-2 border rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <select
+  value={filterBy}
+  onChange={(e) => setFilterBy(e.target.value)}
+  className="px-3 py-2 border rounded-md bg-white cursor-pointer focus:outline-none"
+>
+  <option value="name">Client Name</option>
+  <option value="hire_on_id">Hiring Id</option>
+  <option value="hire_through">Hiring Platform</option>
+</select>
+
+
+        <button 
+          onClick={() => clearFilter()} 
+          className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+        >
+          Clear
+        </button>
+      </div>
+      <div className="flex gap-3">
+      <button
+            onClick={() => setShowImportOptions(!showImportOptions)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            Import
+          </button>
+      <button
+  onClick={() => exportToExcel(clients.data || [], "clients.xlsx")}
+  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+>
+  Export to Excel
+</button>
+</div>
       </div>
 
       <div className="max-w-full overflow-x-auto">
@@ -65,6 +149,7 @@ export const Clienttable = () => {
             </thead>
 
             <tbody className="divide-y divide-gray-100">
+              
   {isLoading ? (
     <tr>
       <td colSpan="4" className="px-6 py-8 text-center">
@@ -75,7 +160,7 @@ export const Clienttable = () => {
       </td>
     </tr>
   ) : clients?.data?.length > 0 ? (
-    clients.data.map((client) => (
+    filteredEmployees.map((client) => (
       <tr key={client.id} className="hover:bg-gray-50 transition-colors duration-150">
         <td className="px-6 py-4 text-gray-800 font-medium text-sm">
           {editClientId === client.id ? (
@@ -182,8 +267,98 @@ export const Clienttable = () => {
 </tbody>
 
           </table>
+          
         </div>
       </div>
+      
+   
+   
+             {showImportOptions && (
+     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-30">
+       <div className="bg-white rounded-lg shadow-lg p-6 w-96 flex flex-col gap-4 animate-fadeIn">
+         <h3 className="text-lg font-semibold text-gray-800 text-center">Select Import Type</h3>
+   
+         <button
+           onClick={() => {
+             setImportType("excel");
+             setShowImportOptions(false);
+           }}
+           className="flex items-center justify-center gap-3 w-full px-4 py-3 text-gray-700 border rounded-md hover:bg-gray-100 transition"
+         >
+           <FaFileExcel className="text-green-600 text-xl" />
+           <span>Import Excel</span>
+         </button>
+   
+         <button
+           onClick={() => {
+             setImportType("googleSheet");
+             setShowImportOptions(false);
+           }}
+           className="flex items-center justify-center gap-3 w-full px-4 py-3 text-gray-700 border rounded-md hover:bg-gray-100 transition"
+         >
+           <FaGoogle className="text-blue-500 text-xl" />
+           <span>Import Google Sheet</span>
+         </button>
+   
+         <button
+           onClick={() => setShowImportOptions(false)}
+           className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+         >
+           Cancel
+         </button>
+       </div>
+     </div>
+   )}
+         
+   
+
+         {importType === "excel" && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+           <div className="mt-3 p-4 border rounded-lg bg-white shadow-md flex flex-col gap-3">
+             <p className="text-gray-700 font-medium">Upload an Excel File:</p>
+             <input
+               type="file"
+               accept=".xlsx, .xls"
+              //  onChange={handleImport}
+               className="px-3 py-2 border rounded-md cursor-pointer"
+             />
+               <button
+           onClick={() => setImportType("")}
+           className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+         >
+           Cancel
+         </button>
+           </div>
+           
+           </div>
+         )}
+   
+         {importType === "googleSheet" && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+           <div className="mt-3 p-4 border rounded-lg bg-white shadow-md flex flex-col gap-3">
+             <p className="text-gray-700 font-medium">Paste Google Sheet Link:</p>
+             <input
+               type="text"
+               placeholder="Enter Google Sheet link"
+               value={googleSheetUrl}
+               onChange={(e) => setGoogleSheetUrl(e.target.value)}
+               className="px-3 py-2 border rounded-md w-72 focus:outline-none"
+             />
+             <button
+              //  onClick={handleGoogleSheetImport}
+               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+             >
+               Import from Google Sheets
+             </button>
+             <button
+           onClick={() => setImportType("")}
+           className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+         >
+           Cancel
+         </button>
+           </div>
+           </div>
+         )}
     </div>
   );
 };
